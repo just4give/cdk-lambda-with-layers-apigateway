@@ -1,5 +1,5 @@
-# Getting started with AWS CDK + Typescript
+# 🍰 Build & Deploy Reusable Lambda Layers Using AWS CDK
 
-![](https://cdn-images-1.medium.com/max/1600/1*BoYW2V3yyjIoW3Xk6eqIGQ.png)
+![](https://cdn-images-1.medium.com/max/1600/1*zUm855rKAp3ADtI3Mu-1UQ.png)
 
-Read the full article on [medium](https://medium.com/@mithundotdas/getting-started-with-aws-cdk-typescript-e9fd951b0de3)
+Read the full article on [medium](https://mithundotdas.medium.com/build-deploy-reusable-lambda-layers-using-aws-cdk-dd1fd47454c3)
