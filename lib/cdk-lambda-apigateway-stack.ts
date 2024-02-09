@@ -4,12 +4,14 @@ import {
   aws_lambda as lambda,
   aws_kms as kms,
   aws_lambda_nodejs as lambdanodejs,
-  aws_apigateway as apigateway,
   aws_dynamodb as dynamodb,
+  aws_iam as iam,
   Duration,
 } from "aws-cdk-lib";
 import * as apigwv2 from "@aws-cdk/aws-apigatewayv2-alpha";
+import { CfnStage as CfnV2Stage } from "aws-cdk-lib/aws-apigatewayv2";
 import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-alpha";
+import { NagSuppressions } from "cdk-nag";
 
 export class CdkLambdaApigatewayStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -56,6 +58,44 @@ export class CdkLambdaApigatewayStack extends cdk.Stack {
       description: "Dynamo related commmon code and access patterns",
     });
 
+    // Attach the policy to the role
+    const getDefaultLambdaPolicy = new iam.Policy(this, "TodoAccessPolicy", {
+      statements: [
+        new iam.PolicyStatement({
+          actions: ["dynamodb:GetItem", "dynamodb:Query", "dynamodb:Scan"],
+          resources: [mainTable.tableArn],
+        }),
+        new iam.PolicyStatement({
+          actions: ["logs:CreateLogGroup", "logs:CreateLogStream", "logs:PutLogEvents"],
+          resources: ["*"],
+        }),
+      ],
+    });
+
+    // Define an IAM role for the Lambda function
+    const getTodolambdaRole = new iam.Role(this, "GetTodoLambdaRole", {
+      assumedBy: new iam.ServicePrincipal("lambda.amazonaws.com"),
+    });
+
+    getTodolambdaRole.attachInlinePolicy(getDefaultLambdaPolicy);
+    encryptionKey.grantDecrypt(getTodolambdaRole);
+
+    NagSuppressions.addResourceSuppressions(
+      getDefaultLambdaPolicy,
+      [
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Exception is made for Lambda Loggroup ",
+          appliesTo: ["Resource::*"],
+        },
+      ],
+      true
+    );
+
+    //NagSuppressions.addStackSuppressions(this, [{ id: "AwsSolutions-IAM5", reason: "lorem ipsum" }]);
+
+    //supress cdk-nag rule AwsSolutions-IAM5 for TodoAccessPolicy
+
     //create the lambda function
     const getTodoLambda = new lambdanodejs.NodejsFunction(this, "getTodoLambda", {
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -71,8 +111,8 @@ export class CdkLambdaApigatewayStack extends cdk.Stack {
         externalModules: ["/opt/nodejs/data-helper"],
       },
       layers: [dbHelperLayer],
+      role: getTodolambdaRole,
     });
-    mainTable.grantReadData(getTodoLambda);
 
     const postTodoLambda = new lambdanodejs.NodejsFunction(this, "postTodoLambda", {
       runtime: lambda.Runtime.NODEJS_18_X,
@@ -91,6 +131,22 @@ export class CdkLambdaApigatewayStack extends cdk.Stack {
     });
     mainTable.grantWriteData(postTodoLambda);
 
+    NagSuppressions.addResourceSuppressions(
+      postTodoLambda,
+      [
+        {
+          id: "AwsSolutions-IAM4",
+          reason: "Allow AWSLambdaBasicExecutionRole for lambdas ",
+          appliesTo: ["Policy::arn:<AWS::Partition>:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"],
+        },
+        {
+          id: "AwsSolutions-IAM5",
+          reason: "Allow wildcard permissions Lambda Log Group ",
+        },
+      ],
+      true
+    );
+
     //create HTTP API
     const httpApi = new apigwv2.HttpApi(this, "todo-http-api", {
       description: "HTTP API For TODO application",
@@ -108,6 +164,26 @@ export class CdkLambdaApigatewayStack extends cdk.Stack {
         allowOrigins: ["*"],
       },
     });
+    //enable access logging for httpApi
+    const accessLogs = new cdk.aws_logs.LogGroup(this, "APIGW-AccessLogs");
+    const stage = httpApi.defaultStage?.node.defaultChild as CfnV2Stage;
+    stage.accessLogSettings = {
+      destinationArn: accessLogs.logGroupArn,
+      format: JSON.stringify({
+        requestId: "$context.requestId",
+        userAgent: "$context.identity.userAgent",
+        sourceIp: "$context.identity.sourceIp",
+        requestTime: "$context.requestTime",
+        httpMethod: "$context.httpMethod",
+        path: "$context.path",
+        status: "$context.status",
+        responseLength: "$context.responseLength",
+      }),
+    };
+
+    NagSuppressions.addStackSuppressions(this, [
+      { id: "AwsSolutions-APIG4", reason: "Authorization is not yet implemented for this app." },
+    ]);
 
     httpApi.addRoutes({
       path: "/todo/{email}",
