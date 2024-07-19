@@ -6,12 +6,18 @@ import { AwsSolutionsChecks } from "cdk-nag";
 
 import * as dotenv from "dotenv";
 import { CustomNagPack } from "./custom-nagpack";
+import { CodePipelineStack } from "../lib/pipeline-stack";
 dotenv.config();
 
 const app = new cdk.App();
 // cdk.Aspects.of(app).add(new AwsSolutionsChecks({ verbose: true }));
 cdk.Aspects.of(app).add(new CustomNagPack({ verbose: true }));
-new CdkLambdaApigatewayStack(app, "CdkLambdaApigatewayStack", {
-  description: "Todo application using AWS CDK",
+const apiStack = new CdkLambdaApigatewayStack(app, "Dev-CdkLambdaApigatewayStack", {
+  description: "Todo application using CDK App",
+  env: { account: process.env.AWS_ACCOUNT_ID, region: process.env.AWS_REGION },
+});
+
+const piplelineStack = new CodePipelineStack(app, "CodePipelineStack", {
+  description: "CICD Pipeline Stack",
   env: { account: process.env.AWS_ACCOUNT_ID, region: process.env.AWS_REGION },
 });

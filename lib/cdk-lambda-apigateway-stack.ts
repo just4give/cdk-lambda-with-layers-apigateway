@@ -197,9 +197,9 @@ export class CdkLambdaApigatewayStack extends cdk.Stack {
       integration: new HttpLambdaIntegration("postTodoLambdaIntegration", postTodoLambda),
     });
 
-    new cdk.CfnOutput(this, `httpapidomain`, {
+    new cdk.CfnOutput(this, `apiEndpoint`, {
       value: httpApi.apiEndpoint,
-      description: "HTTP API domain",
+      description: "HTTP API Endpoint",
     });
   }
 }
