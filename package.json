@@ -8,8 +8,10 @@
     "build": "tsc",
     "watch": "tsc -w",
     "test": "jest",
-    "synth": "cdk synth",
+    "cdk": "./node_modules/.bin/cdk",
+    "synth":"cdk synth",
     "deploy": "cdk deploy --all"
+
   },
   "devDependencies": {
     "@types/jest": "^29.5.5",
