@@ -12,12 +12,13 @@ dotenv.config();
 const app = new cdk.App();
 // cdk.Aspects.of(app).add(new AwsSolutionsChecks({ verbose: true }));
 cdk.Aspects.of(app).add(new CustomNagPack({ verbose: true }));
-const apiStack = new CdkLambdaApigatewayStack(app, "Dev-CdkLambdaApigatewayStack", {
-  description: "Todo application using CDK App",
-  env: { account: process.env.AWS_ACCOUNT_ID, region: process.env.AWS_REGION },
-});
 
 const piplelineStack = new CodePipelineStack(app, "CodePipelineStack", {
   description: "CICD Pipeline Stack",
+  env: { account: process.env.AWS_ACCOUNT_ID, region: process.env.AWS_REGION },
+});
+
+const apiStack = new CdkLambdaApigatewayStack(app, "Dev-CdkLambdaApigatewayStack", {
+  description: "Todo application using CDK App",
   env: { account: process.env.AWS_ACCOUNT_ID, region: process.env.AWS_REGION },
 });

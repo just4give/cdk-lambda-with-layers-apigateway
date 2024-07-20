@@ -17,8 +17,10 @@ export class CodePipelineStack extends cdk.Stack {
     });
 
     const pipeline = new CodePipeline(this, "Pipeline", {
-      pipelineName: "TodoCorePipeline",
-      selfMutation: false,
+      pipelineName: "TodoCodePipeline",
+      selfMutation: true,
+      crossAccountKeys: true,
+      enableKeyRotation: true,
       //   synth: new CodeBuildStep("build", {
       //     input: CodePipelineSource.gitHub("just4give/cdk-lambda-with-layers-apigateway", "master", {
       //       authentication: cdk.SecretValue.secretsManager("GITHUB_TOKEN"),
@@ -40,7 +42,7 @@ export class CodePipelineStack extends cdk.Stack {
           authentication: cdk.SecretValue.secretsManager("GITHUB_TOKEN"),
         }),
         installCommands: ["npm install -g esbuild", "npm ci"],
-        commands: ["npm run synth"],
+        commands: ["npm run synth", "ls -lR ./cdk.out"],
       }),
     });
 
@@ -74,12 +76,12 @@ export class CodePipelineStack extends cdk.Stack {
         }),
         new CodeBuildStep("Security", {
           installCommands: ["npm ci", "gem install cfn-nag"],
-          commands: ["npm run synth", "cfn_nag_scan -i ./cdk.out -t .*.template.json"],
+          commands: ["npm run synth", "ls -lR ./cdk.out", "cfn_nag_scan -i ./cdk.out -t .*.template.json"],
           partialBuildSpec: BuildSpec.fromObject({
             phases: {
               install: {
                 "runtime-versions": {
-                  ruby: "2.6",
+                  ruby: "2.6.0-rc1",
                 },
               },
             },
@@ -93,7 +95,23 @@ export class CodePipelineStack extends cdk.Stack {
             STAGE: devStage.stageName,
           },
           installCommands: ["npm ci"],
-          commands: [],
+          commands: ["echo validated"],
+          rolePolicyStatements: [validatePolicy],
+        }),
+      ],
+    });
+
+    // Add test deployment
+    const testStage = new Deployment(this, "Test");
+    pipeline.addStage(testStage, {
+      // Execute validation check for post-deployment
+      post: [
+        new CodeBuildStep("Validate", {
+          env: {
+            STAGE: testStage.stageName,
+          },
+          installCommands: ["npm ci"],
+          commands: ["echo validated"],
           rolePolicyStatements: [validatePolicy],
         }),
       ],
