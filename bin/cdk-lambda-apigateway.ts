@@ -18,7 +18,7 @@ const piplelineStack = new CodePipelineStack(app, "CodePipelineStack", {
   env: { account: process.env.AWS_ACCOUNT_ID, region: process.env.AWS_REGION },
 });
 
-const apiStack = new CdkLambdaApigatewayStack(app, "Dev-CdkLambdaApigatewayStack", {
-  description: "Todo application using CDK App",
-  env: { account: process.env.AWS_ACCOUNT_ID, region: process.env.AWS_REGION },
-});
+// const apiStack = new CdkLambdaApigatewayStack(app, "Dev-CdkLambdaApigatewayStack", {
+//   description: "Todo application using CDK App",
+//   env: { account: process.env.AWS_ACCOUNT_ID, region: process.env.AWS_REGION },
+// });
