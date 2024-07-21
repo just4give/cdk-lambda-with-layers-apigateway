@@ -18,7 +18,7 @@ export class CodePipelineStack extends cdk.Stack {
 
     const pipeline = new CodePipeline(this, "Pipeline", {
       pipelineName: "TodoCodePipeline",
-      selfMutation: true,
+      selfMutation: false,
       crossAccountKeys: true,
       enableKeyRotation: true,
       //   synth: new CodeBuildStep("build", {

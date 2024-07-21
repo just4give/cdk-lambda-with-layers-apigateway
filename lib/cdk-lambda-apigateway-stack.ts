@@ -20,7 +20,6 @@ export class CdkLambdaApigatewayStack extends cdk.Stack {
     //kms key
     const encryptionKey = new kms.Key(this, "todo-basic-key", {
       enableKeyRotation: true,
-      alias: "todo-basic-key",
     });
 
     //create dynamodb table
