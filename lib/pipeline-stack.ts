@@ -18,7 +18,7 @@ export class CodePipelineStack extends cdk.Stack {
 
     const pipeline = new CodePipeline(this, "Pipeline", {
       pipelineName: "TodoCodePipeline",
-      selfMutation: false,
+      selfMutation: true,
       crossAccountKeys: true,
       enableKeyRotation: true,
       //   synth: new CodeBuildStep("build", {
@@ -116,11 +116,11 @@ export class CodePipelineStack extends cdk.Stack {
       commands: ["echo validated"],
       rolePolicyStatements: [validatePolicy],
     });
-    //const testDeploymentManualApproval = new ManualApprovalStep("Approval");
+    const testDeploymentManualApproval = new ManualApprovalStep("Approval");
 
     testStageDeployment.addPost(testDeploymentValidation);
-    //testStageDeployment.addPost(testDeploymentManualApproval);
-    //testDeploymentManualApproval.addStepDependency(testDeploymentValidation);
+    testStageDeployment.addPost(testDeploymentManualApproval);
+    testDeploymentManualApproval.addStepDependency(testDeploymentValidation);
 
     const prodStage = new Deployment(this, "Prod");
 
