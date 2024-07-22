@@ -2,7 +2,7 @@ import * as cdk from "aws-cdk-lib";
 import { BuildSpec, ComputeType } from "aws-cdk-lib/aws-codebuild";
 import { Repository } from "aws-cdk-lib/aws-codecommit";
 import { Effect, PolicyStatement } from "aws-cdk-lib/aws-iam";
-import { CodeBuildStep, CodePipeline, CodePipelineSource, ShellStep } from "aws-cdk-lib/pipelines";
+import { CodeBuildStep, CodePipeline, CodePipelineSource, ManualApprovalStep, ShellStep } from "aws-cdk-lib/pipelines";
 
 import { Construct } from "constructs";
 import { Deployment } from "./stages";
@@ -103,12 +103,33 @@ export class CodePipelineStack extends cdk.Stack {
 
     // Add test deployment
     const testStage = new Deployment(this, "Test");
-    pipeline.addStage(testStage, {
+    const testStageDeployment = pipeline.addStage(testStage, {
+      // Execute validation check for post-deployment
+      post: [],
+    });
+
+    const testDeploymentValidation = new CodeBuildStep("Validate", {
+      env: {
+        STAGE: testStage.stageName,
+      },
+      installCommands: ["npm ci"],
+      commands: ["echo validated"],
+      rolePolicyStatements: [validatePolicy],
+    });
+    //const testDeploymentManualApproval = new ManualApprovalStep("Approval");
+
+    testStageDeployment.addPost(testDeploymentValidation);
+    //testStageDeployment.addPost(testDeploymentManualApproval);
+    //testDeploymentManualApproval.addStepDependency(testDeploymentValidation);
+
+    const prodStage = new Deployment(this, "Prod");
+
+    pipeline.addStage(prodStage, {
       // Execute validation check for post-deployment
       post: [
         new CodeBuildStep("Validate", {
           env: {
-            STAGE: testStage.stageName,
+            STAGE: prodStage.stageName,
           },
           installCommands: ["npm ci"],
           commands: ["echo validated"],
@@ -116,10 +137,5 @@ export class CodePipelineStack extends cdk.Stack {
         }),
       ],
     });
-
-    //output repository
-    // new cdk.CfnOutput(this, "RepositoryName", {
-    //   value: repo.repositoryName,
-    // });
   }
 }

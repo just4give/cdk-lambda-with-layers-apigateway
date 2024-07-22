@@ -14,7 +14,7 @@ import { HttpLambdaIntegration } from "@aws-cdk/aws-apigatewayv2-integrations-al
 import { NagSuppressions } from "cdk-nag";
 
 export class CdkLambdaApigatewayStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  constructor(scope: Construct, id: string, props?: cdk.StackProps, stageProps?: cdk.StageProps) {
     super(scope, id, props);
 
     //kms key
@@ -104,6 +104,7 @@ export class CdkLambdaApigatewayStack extends cdk.Stack {
       environment: {
         TABLE_MAIN: mainTable.tableName,
         AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
+        ENV_NAME: stageProps?.stageName || "NA",
       },
       bundling: {
         nodeModules: [],
@@ -121,6 +122,7 @@ export class CdkLambdaApigatewayStack extends cdk.Stack {
       environment: {
         TABLE_MAIN: mainTable.tableName,
         AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1",
+        ENV_NAME: stageProps?.stageName || "NA",
       },
       bundling: {
         nodeModules: [],
