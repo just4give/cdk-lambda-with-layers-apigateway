@@ -6,6 +6,9 @@ const handler = async (event) => {
 
   let response = {
     statusCode: 200,
+    headers: {
+      "X-Api-Origin": process.env.ENV_NAME,
+    },
   };
 
   try {
