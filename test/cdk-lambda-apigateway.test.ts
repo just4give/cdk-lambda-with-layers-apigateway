@@ -6,12 +6,13 @@ import * as CdkLambdaApigateway from "../lib/cdk-lambda-apigateway-stack";
 // example resource in lib/cdk-lambda-apigateway-stack.ts
 test("timeToLiveAttribute set to TTL", () => {
   const app = new cdk.App();
-  // WHEN
-  //const stack = new CdkLambdaApigateway.CdkLambdaApigatewayStack(app, "CdkLambdaApigatewayStack");
-  // THEN
-  //const template = Template.fromStack(stack);
 
-  //   template.hasResourceProperties("AWS::DynamoDB::Table", {
-  //     timeToLiveAttribute: "TTL",
-  //   });
+  //write test to check if dynamodb is created with timeToLiveAttribute set to TTL
+  // const stack = new CdkLambdaApigateway.CdkLambdaApigatewayStack(app, "MyTestStack", {}, {});
+
+  // const template = Template.fromStack(stack);
+
+  // template.hasResourceProperties("AWS::DynamoDB::Table", {
+  //   BillingMode: "PAY_PER_REQUEST",
+  // });
 });

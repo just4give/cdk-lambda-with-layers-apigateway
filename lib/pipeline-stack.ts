@@ -116,11 +116,11 @@ export class CodePipelineStack extends cdk.Stack {
       commands: ["echo validated"],
       rolePolicyStatements: [validatePolicy],
     });
-    const testDeploymentManualApproval = new ManualApprovalStep("Approval");
+    //const testDeploymentManualApproval = new ManualApprovalStep("Approval");
 
     testStageDeployment.addPost(testDeploymentValidation);
-    testStageDeployment.addPost(testDeploymentManualApproval);
-    testDeploymentManualApproval.addStepDependency(testDeploymentValidation);
+    // testStageDeployment.addPost(testDeploymentManualApproval);
+    // testDeploymentManualApproval.addStepDependency(testDeploymentValidation);
 
     const prodStage = new Deployment(this, "Prod");
 
